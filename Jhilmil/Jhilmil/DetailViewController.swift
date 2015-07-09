@@ -16,8 +16,8 @@ class DetailViewController: UIViewController {
 
     //MARK: Properties
     @IBOutlet weak var categoryName: UITextField!
-    @IBOutlet weak var categoryStatus: UITextField!
     @IBOutlet weak var categorySwitch: UISwitch!
+    @IBOutlet weak var saveButton: UIBarButtonItem!
     
     var currentObject : PFObject?
     
@@ -40,29 +40,47 @@ class DetailViewController: UIViewController {
     }
     
 
-    @IBAction func saveButton(sender: AnyObject) {
-        // Unwrap the current object object
-        if let object = currentObject {
-            
-            object["name"] = categoryName.text
-            object["status"] = categorySwitch.on
-            
-            // Save the data back to the server in a background task
-            object.saveEventually(nil)
-            
-        }
-        
-        // Return to table view
-        self.navigationController?.popViewControllerAnimated(true)
-    }
-    /*
     // MARK: - Navigation
 
+    @IBAction func cancel(sender: AnyObject) {
+        let isPresentingInAddCategoryMode = presentingViewController is UINavigationController
+        if isPresentingInAddCategoryMode {
+            dismissViewControllerAnimated(true, completion: nil)
+        }
+        else {
+            navigationController!.popViewControllerAnimated(true)
+        }
+    }
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        if saveButton === sender {
+            let isPresentingInAddCategoryMode = presentingViewController is UINavigationController
+            if isPresentingInAddCategoryMode {
+                let object = PFObject(className:"Categories")
+                
+                object["name"] = categoryName.text
+                object["status"] = categorySwitch.on
+                
+                // Save the data back to the server in a background task
+                object.saveEventually(nil)
+//                currentObject = object
+            }
+            else {
+                if let object = currentObject {
+                    
+                    object["name"] = categoryName.text
+                    object["status"] = categorySwitch.on
+                    
+                    // Save the data back to the server in a background task
+                    object.saveEventually(nil)
+                    
+                }
+            }
+        }
     }
-    */
+
 
 }

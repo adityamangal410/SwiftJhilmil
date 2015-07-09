@@ -23,7 +23,7 @@ class TableViewController: PFQueryTableViewController {
         
         // Configure the PFQueryTableView
         self.parseClassName = "Categories"
-        self.textKey = "name"
+//        self.textKey = "name"
         self.pullToRefreshEnabled = true
         self.paginationEnabled = false
     }
@@ -33,6 +33,13 @@ class TableViewController: PFQueryTableViewController {
         let query = PFQuery(className: "Categories")
         query.orderByAscending("name")
         return query
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Use the edit button item provided by the table view controller.
+        navigationItem.leftBarButtonItem = editButtonItem()
     }
     
     //override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
@@ -56,24 +63,64 @@ class TableViewController: PFQueryTableViewController {
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         
-        // Get the new view controller using [segue destinationViewController].
-        let detailScene = segue.destinationViewController as! DetailViewController
-        
-        // Pass the selected object to the destination view controller.
-//        if let indexPath = self.tableView.indexPathForSelectedRow! {
-//            let row = Int(indexPath.row)
-//            detailScene.currentObject = (objects?[row] as! PFObject)
-//        }
-        if let selectedCategoryCell = sender as? CategoryTableViewCell {
-            let indexPath = tableView.indexPathForCell(selectedCategoryCell)!
-            let row = Int(indexPath.row)
-            detailScene.currentObject = (objects?[row] as! PFObject)
+        if segue.identifier == "ShowDetail" {
+            // Get the new view controller using [segue destinationViewController].
+            let detailScene = segue.destinationViewController as! DetailViewController
+            
+            if let selectedCategoryCell = sender as? CategoryTableViewCell {
+                let indexPath = tableView.indexPathForCell(selectedCategoryCell)!
+                let row = Int(indexPath.row)
+                detailScene.currentObject = (objects?[row] as! PFObject)
+            }
+        }
+        else if segue.identifier == "AddItem" {
+            print("Adding new Category..")
         }
     }
     
     override func viewDidAppear(animated: Bool) {
-        
+        print("View Appeared!")
         // Refresh the table to ensure any data changes are displayed
         tableView.reloadData()
+        loadObjects()
+    }
+    
+    @IBAction func unwindToCategoryList(sender: UIStoryboardSegue) {
+        if let _ = sender.sourceViewController as? DetailViewController
+        {
+            print("Back To table!")
+            
+            // Refresh the table to ensure any data changes are displayed
+            tableView.reloadData()
+        }
+    }
+    
+    // Override to support editing the table view.
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if editingStyle == .Delete {
+            let row = Int(indexPath.row)
+            var object : PFObject?
+            object = (objects?[row] as! PFObject)
+            object!.deleteInBackgroundWithBlock {
+                (success: Bool, error: NSError?) -> Void in
+                if (success) {
+                    // The object has been deleted.
+                    self.loadObjects()
+                } else {
+                    // There was a problem, check error.description
+                    print("Object Deletion Failed!")
+                }
+            }
+//            object!.deleteEventually()
+            
+        } else if editingStyle == .Insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+        }
+    }
+    
+    // Override to support conditional editing of the table view.
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        // Return false if you do not want the specified item to be editable.
+        return true
     }
 }
