@@ -41,3 +41,6 @@ xcuserdata
 # Carthage/Checkouts
 
 Carthage/Build
+
+# Removing AppDeletegate
+AppDelegate.swift
